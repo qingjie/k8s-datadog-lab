@@ -18,15 +18,15 @@ These include the logs coming from the control plane containers, but also from o
 
 Search for logs that were captured during the past hour by selecting Past 1 Hour in the time picker at the top right of the page:
 
-![](!lab13-img1.jpeg)
+![](lab13-img1.jpeg)
 
 Select the services that are part of our application (advertisements, storefrontend, discounts, postgres):
 
-![](!lab13-img2.jpeg)
+![](lab13-img2.jpeg)
 
 You can also find the same log query clicking on this link: https://app.datadoghq.com/logs?query=service%3A(storefront%20OR%20discounts%20OR%20advertisements%20OR%20postgres)
 
-![](!lab13-img3.jpeg)
+![](lab13-img3.jpeg)
 
 Spend some time navigating the application logs and getting familiar with the different filters, columns, etc.
 
@@ -44,12 +44,12 @@ Navigate back to APM > Traces and select a complete end to end trace. You can ge
 
 Search for traces that were captured during the past 15 minutes ago by selecting Past 15 Minutes in the time picker on the top right of that page:
 
-![](!lab13-img4.jpeg)
+![](lab13-img4.jpeg)
 
 Select one of the traces you see, and you will see the flame graph appearing on the right panel.
 
 Once in the flame graph, you can see all the logs that the application generated on that request (and that request only) by clicking on the Logs tab at the bottom of the panel:
 
-![](!lab13-img5.jpeg)
+![](lab13-img5.jpeg)
 
 Learning how to debug application issues by correlating traces, logs and infrastructure metrics will be very handy when we have to debug a real issue that we will have in our application.
