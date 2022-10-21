@@ -52,4 +52,5 @@ kubectl get pods -n ns1 --selector=app=ecommerce && kubectl get pods -n database
 At this point you can visit the ecommerce application by clicking on the Ecommerce App tab in the terminal. Browse around to familiarize yourself with the application. Can you tell what areas of web page are served by the advertisements and discounts microservices?
 
 Note: if you get an error like the one shown below, please refresh the page. It happens when the database is still initializing:
+
 ![](lab1-imag1.png)
