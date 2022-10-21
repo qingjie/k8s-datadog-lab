@@ -53,4 +53,4 @@ At this point you can visit the ecommerce application by clicking on the Ecommer
 
 Note: if you get an error like the one shown below, please refresh the page. It happens when the database is still initializing:
 
-![](lab1-imag1.png)
+![](lab1-img1.png)
