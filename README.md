@@ -1,7 +1,7 @@
 # k8s-datadog-lab
 
 ## Set up your Datadog account
- * Lab 3
+ * [Lab 3](lab3.md)
 
 ## Deploy the Datadog Agent
  * Lab 4
