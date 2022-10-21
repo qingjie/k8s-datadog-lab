@@ -1,8 +1,8 @@
 You are going to deploy the Datadog Agent using the Datadog Operator
 
-lab4
+# lab4
 
-# Deploying the Datadog Operator
+## Deploying the Datadog Operator
 You are going to deploy the Datadog Agent using the Datadog Operator.
 
 By using the Operator, you can use a single Custom Resource Definition (CRD) to deploy the node-based Agent, Cluster Agent, and Cluster Checks Runner. The Operator reports deployment status, health, and errors in the Operator’s CRD status.
@@ -24,7 +24,7 @@ my-datadog-operator-858b665ff5-lfxd9     1/1     Running   0            58s
 ```
 Wait until the pod is running before continuing to the next section.
 
-Deploy the Datadog Agent
+## Deploy the Datadog Agent
 Now that the Datadog Operator is running in our cluster, you can deploy the Agent using a DatadogAgent definition.
 
 First, create a Kubernetes secret with your Datadog API and app keys by executing the following command:
@@ -129,4 +129,90 @@ datadog-agent-cxtwq   3/3     Running   0          12m   192.168.171.69   worker
 datadog-agent-g8xxp   3/3     Running   0          12m   192.168.192.73   kubernetes   <none>           <none>
 ```
 
+## Fixing the etcd Check
 
+Autodiscovery is a Datadog feature that identifies automatically the workloads running in a container and enables its corresponding integrations to gather relevant metrics for those services.
+
+The Node Agent running on the control plane node discovers the Kubernetes components running on it and enables those integrations. You can check what integrations are discovered by running the following command:
+```
+kubectl exec -ti $(kubectl get pods -l agent.datadoghq.com/component=agent --field-selector spec.nodeName=kubernetes -o name) -- agent configcheck
+```
+On that output you will see integrations like kubelet, kube_scheduler, kube_controller_manager, kube_apiserver_metrics, etcd and others related to system metrics.
+
+Let's now run the agent status command to check the status of those integrations:
+```
+kubectl exec -ti $(kubectl get pods -l agent.datadoghq.com/component=agent --field-selector spec.nodeName=kubernetes -o name) -- agent status
+```
+As you browse the output of that command, you will see that the etcd check is failing:
+```
+Check Initialization Errors
+===========================
+
+
+    etcd (3.2.0)
+    ------------
+
+    instance 0:
+
+      could not invoke 'etcd' python check constructor. New constructor API returned:
+Traceback (most recent call last):
+File "/opt/datadog-agent/embedded/lib/python3.8/site-packages/datadog_checks/etcd/etcd.py", line 87, in __init__
+  super(Etcd, self).__init__(
+File "/opt/datadog-agent/embedded/lib/python3.8/site-packages/datadog_checks/base/checks/openmetrics/base_check.py", line 126, in __init__
+  raise CheckException(
+datadog_checks.base.errors.CheckException: The agent could not connect to any of the following URLs: ['https://10.132.1.220:2379/metrics', 'http://10.132.1.220:2379/metrics'].
+```
+The reason the Datadog Agent cannot communicate with the etcd pod is that it doesn't have access to the needed certificates. You will be following the official documentation where it is recommended mounting the host path where the etcd certificates are located, and modify the check configuration through a ConfigMap.
+
+Open the Editor tab, select the datadog-etcd.yaml file, and explore the contents. Check the differences between this file and the previous one.
+
+You can also check the differences between these two files by executing the following command:
+```
+diff -U1 --color /root/lab/manifest-files/datadog/datadog-tolerations.yaml /root/lab/manifest-files/datadog/datadog-etcd.yaml
+```
+Let's break down what this new configuration is trying to achieve.
+
+By adding the confd key to our DatadogAgent definition you are telling the agent where to look for additional checks configuration (in this case, in a ConfigMap).
+```
+config:
+  confd:
+    configMapName: datadog-checks
+```
+By adding the following volume and volume mounts you are disabling the default etcd configuration:
+```
+volumes:
+- hostPath:
+- name: disable-etcd-autoconf
+  emptyDir: {}
+volumeMounts:
+- name: disable-etcd-autoconf
+  mountPath: /etc/datadog-agent/conf.d/etcd.d
+```
+By adding the following volume and volume mounts we are mounting the etcd certificates folder into the Datadog Agent pods:
+```
+volumes:
+- hostPath:
+    path: /etc/kubernetes/pki/etcd
+  name: etcd-certs
+volumeMounts:
+- name: etcd-certs
+  mountPath: /host/etc/kubernetes/pki/etcd
+  readOnly: true
+```
+Finally, the ConfigMap with the new configuration for the etcd check is created, passing the certificates and keys path from the Agent volume mounts:
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datadog-checks
+data:
+  etcd.yaml: |-
+    ad_identifiers:
+      - etcd
+    init_config:
+    instances:
+      - prometheus_url: https://%%host%%:2379/metrics
+        tls_ca_cert: /host/etc/kubernetes/pki/etcd/ca.crt
+        tls_cert: /host/etc/kubernetes/pki/etcd/server.crt
+        tls_private_key: /host/etc/kubernetes/pki/etcd/server.key
+```
