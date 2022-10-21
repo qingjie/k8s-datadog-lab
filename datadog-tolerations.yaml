@@ -1,0 +1,37 @@
+apiVersion: datadoghq.com/v1alpha1
+kind: DatadogAgent
+metadata:
+  name: datadog
+spec:
+  clusterName: dash2022
+  credentials:
+    apiSecret:
+      secretName: datadog-secret
+      keyName: api-key
+    appSecret:
+      secretName: datadog-secret
+      keyName: app-key
+  features:
+    kubeStateMetricsCore:
+      enabled: true
+  agent:
+    image:
+      tag: 7.39.0
+    config:
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      kubelet:
+        tlsVerify: false
+    apm:
+      enabled: true
+    log:
+      enabled: true
+      logsConfigContainerCollectAll: true
+    process:
+      enabled: true
+      processCollectionEnabled: true
+  clusterAgent:
+    image:
+      tag: 7.39.0
