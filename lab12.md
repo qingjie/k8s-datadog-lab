@@ -1,6 +1,6 @@
 On this challenge we will understand how we can monitor applications that are deployed to Kubernetes. You will need to answer some questions about the state of the ecommerce application using Datadog.
 
-#Lab 12
+# Lab 12
 
 ## The Ecommerce application
 
@@ -47,10 +47,13 @@ You will get a map similar to this one:
 
 ![](lab12-img5.jpeg)
 
-❓ How many sub-services does the frontend service have?
-❓ Does the advertisements service talk to the discounts service?
-❓ How many requests/second is the frontend service getting?
-❓ Are there any errors?
+* ❓ How many sub-services does the frontend service have?
+
+* ❓ Does the advertisements service talk to the discounts service?
+
+* ❓ How many requests/second is the frontend service getting?
+
+* ❓ Are there any errors?
 
 
 
