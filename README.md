@@ -1,4 +1,4 @@
-# k8s-datadog-lab
+# DASH WORKSHOP: Monitor Your Kubernetes Cluster with Datadog
 
 ## Set up your Datadog account
  * [Lab 3](lab3.md)
